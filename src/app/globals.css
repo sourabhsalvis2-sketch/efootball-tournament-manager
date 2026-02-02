@@ -1,0 +1,476 @@
+/* ===========================================
+   BASE STYLES
+   =========================================== */
+body { 
+  font-family: Roboto, Arial, sans-serif; 
+  margin: 0; 
+}
+
+a { 
+  color: inherit; 
+}
+
+/* Dark gaming theme background */
+body, html, #root { 
+  background: linear-gradient(180deg, #0b0f16 0%, #06070a 100%); 
+  color: #e0e0e0; 
+  min-height: 100%; 
+}
+
+/* Gaming fonts for headings */
+h1, h2, h3, h4, h5, h6, .MuiTypography-h4, .MuiTypography-h5 { 
+  font-family: 'Orbitron', 'Roboto Condensed', sans-serif; 
+  color: #ffffff; 
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6); 
+}
+
+/* ===========================================
+   MATERIAL-UI GLOBAL OVERRIDES
+   =========================================== */
+/* Typography colors */
+.MuiTypography-root { color: #e0e0e0 !important; }
+.MuiTypography-h6 { color: #bfe9ff !important; font-weight: 600; }
+.MuiTypography-subtitle2 { color: #00e5ff !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.MuiTypography-body2 { color: #b0b0b0 !important; }
+
+/* Buttons */
+.MuiButton-root { 
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: linear-gradient(90deg, rgba(0,229,255,0.1), rgba(0,145,234,0.1)) !important;
+  border: 1px solid rgba(0,229,255,0.3) !important;
+  color: #00e5ff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+}
+
+.MuiButton-root:hover { 
+  background: linear-gradient(90deg, rgba(0,229,255,0.2), rgba(0,145,234,0.2)) !important;
+  box-shadow: 0 6px 20px rgba(0,229,255,0.15) !important; 
+  transform: translateY(-2px) !important;
+  border-color: rgba(0,229,255,0.6) !important;
+}
+
+/* Icon buttons */
+.MuiIconButton-root { 
+  color: #00e5ff !important; 
+  background: rgba(0,229,255,0.1) !important;
+  border: 1px solid rgba(0,229,255,0.3) !important;
+  transition: all 200ms ease !important;
+}
+
+.MuiIconButton-root:hover { 
+  background: rgba(0,229,255,0.2) !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 0 20px rgba(0,229,255,0.3) !important;
+}
+
+/* Navigation */
+.MuiAppBar-root { background: linear-gradient(90deg, #0b0f16, #1a2332) !important; }
+.MuiToolbar-root .MuiButton-root { color: #00e5ff !important; }
+
+/* Loading spinner */
+.MuiCircularProgress-root { color: #00e5ff !important; }
+
+/* List items */
+.MuiListItemText-primary { color: #ffffff !important; font-weight: 600 !important; }
+.MuiListItemText-secondary { color: #b0bec5 !important; }
+
+/* Collapse transitions */
+.MuiCollapse-root { transition: opacity 240ms ease; }
+
+/* ===========================================
+   TOURNAMENT CARDS
+   =========================================== */
+.tournaments-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px; 
+}
+
+.tournament-card { 
+  background: linear-gradient(135deg, rgba(6,30,60,0.95), rgba(2,8,20,0.98));
+  border: 2px solid rgba(0,200,255,0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 20px rgba(0,200,255,0.1);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  padding: 12px;
+  animation: card-slide-in 0.6s ease-out;
+}
+
+.tournament-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00e5ff, #0091ea, #00e5ff);
+  opacity: 0.8;
+}
+
+.tournament-card:hover {
+  transform: scale(1.01) translateY(-1px);
+  border-color: rgba(0,255,200,0.4);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.8), 0 0 40px rgba(0,255,200,0.15);
+  z-index: 2;
+}
+
+.tournament-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  gap: 16px; 
+}
+
+.tournament-header .MuiTypography-h5 { 
+  color: #bfe9ff; 
+}
+
+/* Tournament card list items */
+.tournament-card .MuiListItem-root { 
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 8px !important;
+  margin-bottom: 4px !important;
+  border: 1px solid transparent !important;
+}
+
+.tournament-card .MuiListItem-root:hover { 
+  background: rgba(0,229,255,0.08) !important; 
+  transform: translateX(8px) !important; 
+  border-color: rgba(0,229,255,0.3) !important;
+  box-shadow: 0 4px 16px rgba(0,229,255,0.1) !important;
+}
+
+/* ===========================================
+   WINNER & TROPHY STYLES
+   =========================================== */
+.winner-box { 
+  background: linear-gradient(90deg, rgba(255,215,0,0.12), rgba(255,215,0,0.04)); 
+  color: #fff; 
+  padding: 8px 12px; 
+  border-radius: 8px; 
+  display: inline-block; 
+}
+
+.MuiChip-root.MuiChip-colorSuccess { 
+  background: linear-gradient(90deg,#ffd54d,#ffc107) !important; 
+  color: #08121a !important; 
+  font-weight: 700 !important; 
+  text-shadow: 0 1px 0 rgba(255,255,255,0.08) !important;
+  border: 2px solid #ffeb3b !important;
+  box-shadow: 0 4px 16px rgba(255,193,7,0.3) !important;
+  animation: winner-glow 2s ease-in-out infinite alternate !important;
+}
+
+.winner-trophy { 
+  margin-right: 8px; 
+  vertical-align: middle; 
+  color: #ffd700 !important;
+  filter: drop-shadow(0 0 8px rgba(255,215,0,0.6));
+  animation: trophy-pulse 1.5s ease-in-out infinite alternate;
+}
+
+/* ===========================================
+   MATCH STATUS INDICATORS
+   =========================================== */
+.match-status-scheduled { 
+  background: linear-gradient(90deg, rgba(158,158,158,0.2), rgba(117,117,117,0.1)) !important; 
+  border-left: 4px solid #9e9e9e !important; 
+}
+
+.match-status-completed { 
+  background: linear-gradient(90deg, rgba(76,175,80,0.2), rgba(56,142,60,0.1)) !important; 
+  border-left: 4px solid #4caf50 !important; 
+}
+
+.match-status-ongoing { 
+  background: linear-gradient(90deg, rgba(255,152,0,0.2), rgba(245,124,0,0.1)) !important; 
+  border-left: 4px solid #ff9800 !important; 
+}
+
+/* ===========================================
+   STANDINGS TABLE
+   =========================================== */
+.MuiTableContainer-root {
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  width: 100% !important;
+}
+
+.MuiTable-root {
+  background: transparent !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.MuiTable-root .MuiTableCell-root {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Override for standings tables - prevent ellipses and allow proper display */
+.MuiTable-root .MuiTableCell-root {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+}
+
+/* Allow player names to wrap to multiple lines */
+.MuiTable-root .MuiTableCell-root:nth-child(2) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+}
+
+/* ===========================================
+   ADMIN DASHBOARD STYLES
+   =========================================== */
+.admin-dashboard {
+  padding: 24px;
+  background: linear-gradient(180deg, #0b0f16 0%, #06070a 100%);
+  min-height: 100vh;
+}
+
+.dashboard-title {
+  color: #ffffff !important;
+  font-family: 'Orbitron', sans-serif !important;
+  font-weight: 700 !important;
+  text-align: center;
+  margin-bottom: 24px !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.section-title {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  margin-bottom: 16px !important;
+  font-size: 1.25rem !important;
+}
+
+/* Dashboard cards */
+.dashboard-card, .tournament-admin-card {
+  background: linear-gradient(135deg, rgba(15,40,70,0.9), rgba(8,20,35,0.95)) !important;
+  border: 1px solid rgba(0,200,255,0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  transition: all 300ms ease !important;
+}
+
+.dashboard-card:hover, .tournament-admin-card:hover {
+  border-color: rgba(0,200,255,0.4) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 20px rgba(0,200,255,0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Admin text elements */
+.card-title { color: #bfe9ff !important; font-weight: 600 !important; margin-bottom: 16px !important; }
+.tournament-name { color: #ffffff !important; font-weight: 600 !important; font-size: 1.1rem !important; }
+.tournament-id { color: #90a4ae !important; font-weight: 400 !important; font-size: 0.9rem !important; }
+.tournament-status { color: #b0bec5 !important; margin: 8px 0 16px 0 !important; }
+.section-subtitle { color: #81c784 !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; font-size: 0.875rem !important; margin-bottom: 8px !important; }
+
+/* Admin lists and items */
+.players-list, .matches-list { display: flex; flex-direction: column; gap: 8px; }
+.tournament-actions { margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-section { margin-top: 16px !important; padding: 12px 0; border-top: 1px solid rgba(0,200,255,0.1); }
+
+/* Accordion Styling for Tournament Sections */
+.MuiAccordion-root {
+  border: 1px solid rgba(0,200,255,0.2) !important;
+  border-radius: 8px !important;
+}
+
+.MuiAccordion-root:before {
+  display: none !important;
+}
+
+.MuiAccordionSummary-root {
+  border-radius: 8px !important;
+}
+
+.MuiAccordionSummary-root:hover {
+  background-color: rgba(0,200,255,0.08) !important;
+}
+
+.MuiAccordionDetails-root {
+  padding-top: 8px !important;
+}
+
+.player-item, .match-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0,200,255,0.05);
+  border: 1px solid rgba(0,200,255,0.1);
+  border-radius: 8px;
+  transition: all 200ms ease;
+}
+
+.player-item:hover, .match-item:hover {
+  background: rgba(0,200,255,0.08);
+  border-color: rgba(0,200,255,0.2);
+  transform: translateX(4px);
+}
+
+/* Admin text colors */
+.player-name, .match-details { color: #e0e0e0; font-weight: 500; }
+.match-round { color: #81c784; font-weight: 600; }
+.match-players { color: #ffffff; font-weight: 500; }
+.match-score { color: #ffb74d; font-weight: 600; }
+
+/* ===========================================
+   FORM INPUTS & DIALOGS
+   =========================================== */
+/* Input fields */
+.dashboard-input .MuiInputLabel-root, .score-input .MuiInputLabel-root { color: #90a4ae !important; }
+.dashboard-input .MuiInputLabel-root.Mui-focused, .score-input .MuiInputLabel-root.Mui-focused { color: #00e5ff !important; }
+.dashboard-input .MuiOutlinedInput-root, .score-input .MuiOutlinedInput-root { color: #ffffff !important; }
+.dashboard-input .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline, .score-input .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline { border-color: rgba(0,200,255,0.3) !important; }
+.dashboard-input .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline, .score-input .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline { border-color: rgba(0,200,255,0.5) !important; }
+.dashboard-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline, .score-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: #00e5ff !important; }
+
+/* Dialog styling */
+.score-dialog .MuiDialog-paper {
+  background: linear-gradient(135deg, rgba(15,40,70,0.95), rgba(8,20,35,0.98)) !important;
+  border: 1px solid rgba(0,200,255,0.3) !important;
+  border-radius: 12px !important;
+}
+
+.dialog-title { color: #bfe9ff !important; font-weight: 600 !important; border-bottom: 1px solid rgba(0,200,255,0.2) !important; }
+.dialog-content { color: #e0e0e0 !important; }
+.match-info { color: #ffffff !important; font-weight: 500 !important; text-align: center !important; }
+.dialog-actions { border-top: 1px solid rgba(0,200,255,0.2) !important; padding: 16px 24px !important; }
+
+/* Dialog buttons */
+.dialog-cancel-button { color: #90a4ae !important; border-color: rgba(144,164,174,0.3) !important; }
+.dialog-cancel-button:hover { background: rgba(144,164,174,0.1) !important; border-color: rgba(144,164,174,0.5) !important; }
+.dialog-submit-button { background: linear-gradient(90deg, rgba(0,200,255,0.2), rgba(0,145,234,0.2)) !important; border: 1px solid rgba(0,200,255,0.4) !important; color: #ffffff !important; }
+.dialog-submit-button:hover { background: linear-gradient(90deg, rgba(0,200,255,0.3), rgba(0,145,234,0.3)) !important; border-color: rgba(0,200,255,0.6) !important; }
+
+/* ===========================================
+   UTILITY CLASSES
+   =========================================== */
+.accent-neon { 
+  color: #00e5ff; 
+  text-shadow: 0 0 6px rgba(0,229,255,0.12); 
+}
+
+/* ===========================================
+   ANIMATIONS
+   =========================================== */
+@keyframes card-slide-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes winner-glow {
+  from { box-shadow: 0 4px 16px rgba(255,193,7,0.3); }
+  to { box-shadow: 0 6px 24px rgba(255,193,7,0.6); }
+}
+
+@keyframes trophy-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+/* ===========================================
+   RESPONSIVE DESIGN
+   =========================================== */
+@media (max-width: 768px) {
+  /* Tournament adjustments */
+  .tournament-header { 
+    flex-direction: column !important; 
+    align-items: flex-start !important; 
+    gap: 12px !important; 
+  }
+  
+  .tournament-card { 
+    margin: 0 8px; 
+    padding: 16px !important;
+  }
+  
+  .tournaments-list { 
+    gap: 16px; 
+    padding: 0 8px; 
+  }
+  
+  /* Grid adjustments */
+  .MuiGrid-container { 
+    margin: 0 !important; 
+    gap: 8px !important;
+  }
+  
+  .MuiGrid-item { 
+    padding: 8px !important; 
+  }
+  
+  /* Sections */
+  .winner-section {
+    text-align: center !important;
+    width: 100% !important;
+    margin: 12px 0 !important;
+    order: 2 !important;
+  }
+  
+  .player-count-section {
+    width: 100% !important;
+    justify-content: space-between !important;
+    order: 3 !important;
+  }
+  
+  /* Table mobile optimization */
+  .MuiTableContainer-root {
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .MuiTable-root {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+  
+  /* Mobile: Make player name column wider */
+  .MuiTable-root .MuiTableCell-root:nth-child(2) {
+    width: 40% !important;
+  }
+  
+  /* Lists mobile spacing */
+  .MuiList-root.MuiList-dense {
+    padding: 4px 0 !important;
+  }
+  
+  .MuiListItem-root {
+    padding: 4px 8px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  /* Admin dashboard mobile */
+  .admin-dashboard {
+    padding: 16px;
+  }
+  
+  .tournament-actions {
+    flex-direction: column;
+  }
+  
+  .player-item, .match-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .player-action-button, .match-action-button {
+    align-self: flex-end;
+  }
+}
