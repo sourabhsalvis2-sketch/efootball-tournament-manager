@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import apiClient from '@/lib/api'
 import { tournamentCache } from '@/lib/cache'
+import { clientCache } from '@/lib/clientCache'
 
 export interface Tournament {
   id: number
@@ -30,10 +31,41 @@ export function useTournaments() {
 
   const loadTournaments = useCallback(async () => {
     try {
+      // First, try to get tournaments list from client cache
+      const cachedTournaments = clientCache.get<Tournament[]>('tournaments_list')
+      
+      if (cachedTournaments) {
+        setTournaments(cachedTournaments)
+        setLoadError(null)
+        
+        // Load details from cache for each tournament
+        for (const tournament of cachedTournaments) {
+          const cachedDetails = clientCache.get<Record<string, any>>('tournament_details', tournament.id.toString(), tournament.status)
+          if (cachedDetails) {
+            setDetails(prev => ({
+              ...prev,
+              [tournament.id]: {
+                ...(prev[tournament.id] || {}),
+                ...cachedDetails,
+                loading: false
+              }
+            }))
+          } else {
+            // Fetch details if not in client cache
+            fetchTournamentDetails(tournament.id, tournament)
+          }
+        }
+        return
+      }
+      
+      // If not in client cache, fetch from server
       const response = await apiClient.get('/api/tournaments')
       if (Array.isArray(response.data)) {
         setTournaments(response.data)
         setLoadError(null)
+        
+        // Cache tournaments list in client storage
+        clientCache.set('tournaments_list', response.data)
         
         // Fetch details for each tournament
         for (const tournament of response.data) {
@@ -59,7 +91,21 @@ export function useTournaments() {
     const tournament = tournamentData || tournaments.find(t => t.id === tournamentId)
     if (!tournament) return
 
-    // Check cache first for completed tournaments
+    // Check client cache first
+    const cachedDetails = clientCache.get<Record<string, any>>('tournament_details', tournamentId.toString(), tournament.status)
+    if (cachedDetails) {
+      setDetails(prev => ({
+        ...prev,
+        [tournamentId]: {
+          ...(prev[tournamentId] || {}),
+          ...cachedDetails,
+          loading: false
+        }
+      }))
+      return
+    }
+
+    // Check server cache for completed tournaments
     if (tournament.status === 'completed') {
       const cachedStandings = tournamentCache.get<any[] | null>(tournamentId, 'standings', tournament.status)
       const cachedWinner = tournamentCache.get<any | null>(tournamentId, 'winner', tournament.status)
@@ -68,15 +114,22 @@ export function useTournaments() {
 
       // If all cached data exists, use it
       if (cachedStandings !== null && cachedWinner !== null && cachedRunnerUp !== null) {
+        const detailsData = {
+          standings: cachedStandings,
+          winner: cachedWinner,
+          runnerUp: cachedRunnerUp,
+          thirdPlace: cachedThirdPlace,
+          loading: false
+        }
+        
+        // Store in client cache
+        clientCache.set('tournament_details', detailsData, tournamentId.toString(), tournament.status)
+        
         setDetails(prev => ({
           ...prev,
           [tournamentId]: {
             ...(prev[tournamentId] || {}),
-            standings: cachedStandings,
-            winner: cachedWinner,
-            runnerUp: cachedRunnerUp,
-            thirdPlace: cachedThirdPlace,
-            loading: false
+            ...detailsData
           }
         }))
         return
@@ -88,12 +141,19 @@ export function useTournaments() {
     if (tournament.status === 'pending') {
       const cachedStandings = tournamentCache.get<any[] | null>(tournamentId, 'standings', tournament.status)
       if (cachedStandings !== null) {
+        const detailsData = {
+          standings: cachedStandings,
+          loading: false
+        }
+        
+        // Store in client cache
+        clientCache.set('tournament_details', detailsData, tournamentId.toString(), tournament.status)
+        
         setDetails(prev => ({
           ...prev,
           [tournamentId]: {
             ...(prev[tournamentId] || {}),
-            standings: cachedStandings,
-            loading: false
+            ...detailsData
           }
         }))
         return
@@ -145,7 +205,7 @@ export function useTournaments() {
 
       const [standings, winner, runnerUp, thirdPlace] = await Promise.all(requests)
       
-      // Cache the results
+      // Cache the results in server cache
       tournamentCache.set(tournamentId, 'standings', standings, tournament.status)
       if (tournament.status === 'completed') {
         tournamentCache.set(tournamentId, 'winner', winner, tournament.status)
@@ -153,15 +213,22 @@ export function useTournaments() {
         tournamentCache.set(tournamentId, 'thirdPlace', thirdPlace, tournament.status)
       }
       
+      const detailsData = {
+        standings,
+        winner,
+        runnerUp,
+        thirdPlace,
+        loading: false
+      }
+      
+      // Store in client cache for instant future loads
+      clientCache.set('tournament_details', detailsData, tournamentId.toString(), tournament.status)
+      
       setDetails(prev => ({
         ...prev,
         [tournamentId]: {
           ...(prev[tournamentId] || {}), // Preserve existing state like expanded
-          standings,
-          winner,
-          runnerUp,
-          thirdPlace,
-          loading: false
+          ...detailsData
         }
       }))
     } catch (error) {

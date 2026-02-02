@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { DatabaseService } from "@/lib/db"
 import { verifyAdminSession, createUnauthorizedResponse } from "@/lib/auth"
 import { tournamentCache } from "@/lib/cache"
+import { clientCache } from "@/lib/clientCache"
 
 export async function PUT(
   request: NextRequest,
@@ -49,11 +50,15 @@ export async function PUT(
     // ✅ Update DB
     const result = await DatabaseService.updateMatchScore(matchId, score1, score2)
     
-    // ✅ Invalidate cache for the tournament
+    // ✅ Invalidate server cache for the tournament
     if (result && result.tournament_id) {
       tournamentCache.invalidate(result.tournament_id)
       // Also invalidate all in-progress tournaments since standings might change
       tournamentCache.invalidateInProgress()
+      
+      // ✅ Invalidate client cache for the tournament and refresh tournaments list
+      clientCache.invalidate('tournament_details', result.tournament_id.toString())
+      clientCache.invalidate('tournaments_list')
     }
     
     return NextResponse.json(result)

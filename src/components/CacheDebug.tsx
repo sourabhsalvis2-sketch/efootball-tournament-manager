@@ -1,12 +1,23 @@
 'use client'
 
 import React from 'react'
-import { Box, Typography, Button, Card, CardContent, Collapse } from '@mui/material'
+import { Box, Typography, Button, Card, CardContent, Collapse, Divider } from '@mui/material'
 import { useCacheManagement } from '@/hooks/useCacheManagement'
+import { clientCache } from '@/lib/clientCache'
 
 export function CacheDebug() {
   const { cacheStats, refreshStats, clearAllCache, invalidateInProgress } = useCacheManagement()
   const [expanded, setExpanded] = React.useState(false)
+  const [clientStats, setClientStats] = React.useState(() => clientCache.getStats())
+
+  const refreshClientStats = React.useCallback(() => {
+    setClientStats(clientCache.getStats())
+  }, [])
+
+  const clearClientCache = React.useCallback(() => {
+    clientCache.clear()
+    refreshClientStats()
+  }, [refreshClientStats])
 
   if (process.env.NODE_ENV === 'production') {
     return null // Don't show in production
@@ -30,6 +41,10 @@ export function CacheDebug() {
         
         <Collapse in={expanded}>
           <Box sx={{ mt: 2 }}>
+            {/* Server Cache Stats */}
+            <Typography variant="subtitle2" sx={{ color: '#00e5ff', mb: 1 }}>
+              🖥️ Server Cache
+            </Typography>
             <Typography variant="body2" sx={{ color: '#b0bec5', mb: 1 }}>
               Total Cached Items: <strong>{cacheStats.total}</strong>
             </Typography>
@@ -47,18 +62,43 @@ export function CacheDebug() {
               </Box>
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Divider sx={{ bgcolor: 'rgba(0, 229, 255, 0.2)', my: 2 }} />
+
+            {/* Client Cache Stats */}
+            <Typography variant="subtitle2" sx={{ color: '#00e5ff', mb: 1 }}>
+              💾 Client Cache (Browser)
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#b0bec5', mb: 1 }}>
+              Total Items: <strong>{clientStats.total}</strong> | 
+              Size: <strong>{clientStats.size}</strong>
+            </Typography>
+
+            {clientStats.entries.length > 0 && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="caption" sx={{ color: '#666', mb: 1, display: 'block' }}>
+                  Recent entries:
+                </Typography>
+                {clientStats.entries.map((entry, index) => (
+                  <Typography key={index} variant="caption" sx={{ color: '#888', display: 'block', ml: 2 }}>
+                    • {entry.key} (Age: {entry.age}, Size: {entry.size})
+                  </Typography>
+                ))}
+              </Box>
+            )}
+
+            {/* Control Buttons */}
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
               <Button
                 size="small"
                 variant="outlined"
-                onClick={refreshStats}
+                onClick={() => { refreshStats(); refreshClientStats(); }}
                 sx={{ 
                   fontSize: '0.75rem',
                   borderColor: '#00e5ff',
                   color: '#00e5ff'
                 }}
               >
-                🔄 Refresh Stats
+                🔄 Refresh All
               </Button>
               
               <Button
@@ -71,7 +111,20 @@ export function CacheDebug() {
                   color: '#ff9800'
                 }}
               >
-                🔄 Clear In-Progress
+                🔄 Clear Server In-Progress
+              </Button>
+              
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={clearClientCache}
+                sx={{ 
+                  fontSize: '0.75rem',
+                  borderColor: '#9c27b0',
+                  color: '#9c27b0'
+                }}
+              >
+                🗑️ Clear Client Cache
               </Button>
               
               <Button
@@ -84,12 +137,13 @@ export function CacheDebug() {
                   color: '#f44336'
                 }}
               >
-                🗑️ Clear All
+                🗑️ Clear Server All
               </Button>
             </Box>
 
-            <Typography variant="caption" sx={{ color: '#666', mt: 2, display: 'block' }}>
-              💡 Completed tournaments cache for 30min, In-progress for 2min, Pending for 10min
+            <Typography variant="caption" sx={{ color: '#666', display: 'block' }}>
+              💡 <strong>Server:</strong> Completed=30min, In-Progress=2min, Pending=10min | 
+              <strong> Client:</strong> Completed=1hr, In-Progress=5min, Pending=30min
             </Typography>
           </Box>
         </Collapse>
