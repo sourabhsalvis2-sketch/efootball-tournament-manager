@@ -38,8 +38,14 @@ export function useTournaments() {
         setTournaments(cachedTournaments)
         setLoadError(null)
         
-        // Load details from cache for each tournament
+        // Load details from cache for each tournament (skip in-progress)
         for (const tournament of cachedTournaments) {
+          // Skip caching for in-progress tournaments - always fetch fresh
+          if (tournament.status === 'in_progress') {
+            fetchTournamentDetails(tournament.id, tournament)
+            continue
+          }
+          
           const cachedDetails = clientCache.get<Record<string, any>>('tournament_details', tournament.id.toString(), tournament.status)
           if (cachedDetails) {
             setDetails(prev => ({
@@ -91,18 +97,20 @@ export function useTournaments() {
     const tournament = tournamentData || tournaments.find(t => t.id === tournamentId)
     if (!tournament) return
 
-    // Check client cache first
-    const cachedDetails = clientCache.get<Record<string, any>>('tournament_details', tournamentId.toString(), tournament.status)
-    if (cachedDetails) {
-      setDetails(prev => ({
-        ...prev,
-        [tournamentId]: {
-          ...(prev[tournamentId] || {}),
-          ...cachedDetails,
-          loading: false
-        }
-      }))
-      return
+    // Skip client cache for in-progress tournaments - always fetch fresh data
+    if (tournament.status !== 'in_progress') {
+      const cachedDetails = clientCache.get<Record<string, any>>('tournament_details', tournamentId.toString(), tournament.status)
+      if (cachedDetails) {
+        setDetails(prev => ({
+          ...prev,
+          [tournamentId]: {
+            ...(prev[tournamentId] || {}),
+            ...cachedDetails,
+            loading: false
+          }
+        }))
+        return
+      }
     }
 
     // Check server cache for completed tournaments
@@ -221,8 +229,10 @@ export function useTournaments() {
         loading: false
       }
       
-      // Store in client cache for instant future loads
-      clientCache.set('tournament_details', detailsData, tournamentId.toString(), tournament.status)
+      // Store in client cache for instant future loads (skip in-progress)
+      if (tournament.status !== 'in_progress') {
+        clientCache.set('tournament_details', detailsData, tournamentId.toString(), tournament.status)
+      }
       
       setDetails(prev => ({
         ...prev,

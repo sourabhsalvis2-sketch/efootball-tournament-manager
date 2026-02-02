@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import apiClient from '@/lib/api'
+import { clientCache } from '@/lib/clientCache'
 
 interface Tournament {
   id: number
@@ -31,8 +32,32 @@ export function useTournaments() {
 
   const loadTournaments = async () => {
     try {
+      // First, try to get tournaments list from client cache
+      const cachedTournaments = clientCache.get<Tournament[]>('tournaments_list')
+      
+      if (cachedTournaments) {
+        setTournaments(cachedTournaments)
+        
+        // For admin dashboard, always fetch fresh data for in-progress tournaments
+        const inProgressTournaments = cachedTournaments.filter(t => t.status === 'in_progress')
+        if (inProgressTournaments.length > 0) {
+          // Fetch fresh data from server to get latest in-progress tournament info
+          const response = await apiClient.get('/api/tournaments')
+          setTournaments(response.data)
+          // Update cache with fresh data
+          clientCache.set('tournaments_list', response.data)
+        }
+        
+        return cachedTournaments
+      }
+      
+      // If not in client cache, fetch from server
       const response = await apiClient.get('/api/tournaments')
       setTournaments(response.data)
+      
+      // Cache tournaments list in client storage
+      clientCache.set('tournaments_list', response.data)
+      
       return response.data
     } catch (error) {
       console.error('Failed to load tournaments:', error)
@@ -67,6 +92,10 @@ export function useTournaments() {
       }
 
       await apiClient.post('/api/tournaments', config)
+      
+      // Invalidate client cache after creating tournament
+      clientCache.invalidate('tournaments_list')
+      
       await loadTournaments()
     } finally {
       setCreatingTournament(false)
@@ -80,6 +109,10 @@ export function useTournaments() {
 
     try {
       await apiClient.delete(`/api/tournaments/${tournamentId}`)
+      
+      // Invalidate client cache after deleting tournament
+      clientCache.invalidate('tournaments_list')
+      
       // If the deleted tournament was selected, clear the selection
       if (selectedTournament === tournamentId) {
         setSelectedTournament(null)
