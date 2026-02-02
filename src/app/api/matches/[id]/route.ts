@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { DatabaseService } from "@/lib/db"
 import { verifyAdminSession, createUnauthorizedResponse } from "@/lib/auth"
+import { tournamentCache } from "@/lib/cache"
 
 export async function PUT(
   request: NextRequest,
@@ -47,6 +48,14 @@ export async function PUT(
 
     // ✅ Update DB
     const result = await DatabaseService.updateMatchScore(matchId, score1, score2)
+    
+    // ✅ Invalidate cache for the tournament
+    if (result && result.tournament_id) {
+      tournamentCache.invalidate(result.tournament_id)
+      // Also invalidate all in-progress tournaments since standings might change
+      tournamentCache.invalidateInProgress()
+    }
+    
     return NextResponse.json(result)
   } catch (error) {
     console.error("Update match score error:", error)

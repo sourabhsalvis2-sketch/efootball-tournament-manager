@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import apiClient from '@/lib/api'
+import { tournamentCache } from '@/lib/cache'
 
 export interface Tournament {
   id: number
@@ -54,6 +55,52 @@ export function useTournaments() {
     // Prevent concurrent fetches for the same tournament
     if (fetchingDetails.has(tournamentId)) return
 
+    // Use passed tournament data or find in current tournaments state
+    const tournament = tournamentData || tournaments.find(t => t.id === tournamentId)
+    if (!tournament) return
+
+    // Check cache first for completed tournaments
+    if (tournament.status === 'completed') {
+      const cachedStandings = tournamentCache.get<any[] | null>(tournamentId, 'standings', tournament.status)
+      const cachedWinner = tournamentCache.get<any | null>(tournamentId, 'winner', tournament.status)
+      const cachedRunnerUp = tournamentCache.get<any | null>(tournamentId, 'runnerUp', tournament.status)
+      const cachedThirdPlace = tournamentCache.get<any | null>(tournamentId, 'thirdPlace', tournament.status)
+
+      // If all cached data exists, use it
+      if (cachedStandings !== null && cachedWinner !== null && cachedRunnerUp !== null) {
+        setDetails(prev => ({
+          ...prev,
+          [tournamentId]: {
+            ...(prev[tournamentId] || {}),
+            standings: cachedStandings,
+            winner: cachedWinner,
+            runnerUp: cachedRunnerUp,
+            thirdPlace: cachedThirdPlace,
+            loading: false
+          }
+        }))
+        return
+      }
+    }
+
+    // For in-progress tournaments, always fetch fresh data (shorter cache time)
+    // For pending tournaments, use cache if available
+    if (tournament.status === 'pending') {
+      const cachedStandings = tournamentCache.get<any[] | null>(tournamentId, 'standings', tournament.status)
+      if (cachedStandings !== null) {
+        setDetails(prev => ({
+          ...prev,
+          [tournamentId]: {
+            ...(prev[tournamentId] || {}),
+            standings: cachedStandings,
+            loading: false
+          }
+        }))
+        return
+      }
+    }
+
+    // Set loading state
     setFetchingDetails(prev => {
       const newSet = new Set(prev)
       newSet.add(tournamentId)
@@ -69,22 +116,19 @@ export function useTournaments() {
     }))
 
     try {
-      // Use passed tournament data or find in current tournaments state
-      const tournament = tournamentData || tournaments.find(t => t.id === tournamentId)
-
       const requests = [
         apiClient.get(`/api/tournaments/${tournamentId}/standings`).then(r => r.data).catch(() => null)
       ]
 
       // Only fetch winner, runner-up, and third place for completed tournaments
-      if (tournament?.status === 'completed') {
+      if (tournament.status === 'completed') {
         requests.push(
           apiClient.get(`/api/tournaments/${tournamentId}/winner`).then(r => r.data).catch(() => null),
           apiClient.get(`/api/tournaments/${tournamentId}/runner-up`).then(r => r.data).catch(() => null)
         )
         
         // Only fetch third place for tournaments with third place playoff enabled
-        if (tournament?.type === 'group_and_knockout' && tournament?.third_place_playoff) {
+        if (tournament.type === 'group_and_knockout' && tournament.third_place_playoff) {
           requests.push(
             apiClient.get(`/api/tournaments/${tournamentId}/third-place`).then(r => r.data).catch(() => null)
           )
@@ -101,6 +145,14 @@ export function useTournaments() {
 
       const [standings, winner, runnerUp, thirdPlace] = await Promise.all(requests)
       
+      // Cache the results
+      tournamentCache.set(tournamentId, 'standings', standings, tournament.status)
+      if (tournament.status === 'completed') {
+        tournamentCache.set(tournamentId, 'winner', winner, tournament.status)
+        tournamentCache.set(tournamentId, 'runnerUp', runnerUp, tournament.status)
+        tournamentCache.set(tournamentId, 'thirdPlace', thirdPlace, tournament.status)
+      }
+      
       setDetails(prev => ({
         ...prev,
         [tournamentId]: {
@@ -113,6 +165,7 @@ export function useTournaments() {
         }
       }))
     } catch (error) {
+      console.error(`Failed to fetch details for tournament ${tournamentId}:`, error)
       setDetails(prev => ({
         ...prev,
         [tournamentId]: {

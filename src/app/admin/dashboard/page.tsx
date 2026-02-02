@@ -6,6 +6,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { useTournaments } from './hooks/useTournaments'
 import { usePlayers } from './hooks/usePlayers'
 import { useMatches } from './hooks/useMatches'
+import { CacheDebug } from '@/components/CacheDebug'
 
 // Lazy load heavy admin components
 const TournamentCard = lazy(() => import('./components/TournamentCard').then(module => ({ default: module.TournamentCard })))
@@ -129,6 +130,8 @@ export default function AdminDashboard() {
           Logout
         </Button>
       </Box>
+
+      <CacheDebug />
 
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item xs={12} md={4}>
